@@ -1,15 +1,24 @@
 # Grogu receiver
 
 Firmware for grogu's BLE/wheels board, built on a **Seeed XIAO ESP32-C6**.
-Advertises to the DroidController phone app over BLE and drives an
-**L298N** dual H-bridge (differential/tank drive) directly.
+Advertises to the [**Droid_Phone_Controller**](https://github.com/andcoderes/Droid_Phone_Controller)
+phone app over BLE and drives an **L298N** dual H-bridge (differential/tank
+drive) directly.
 
-It also brings up an **ESP-NOW link to `motor_controller`**
-(`../motor_controller`), a Bottango Impulse board running grogu's custom
-firmware for servos/animatronics. Grogu has no audio hardware, so the
-app's audio button slot (`s:3`) is repurposed to hold animation
-triggers/stop instead of real audio — see `motor_controller/README.md`
-for that side of the link.
+It also brings up an **ESP-NOW link to
+[`grogu_servo_controller`](https://github.com/andcoderes/grogu_servo_controller)**,
+a Bottango Impulse board running grogu's custom firmware for
+servos/animatronics. Grogu has no audio hardware, so the app's audio
+button slot (`s:3`) is repurposed to hold animation triggers/stop instead
+of real audio — see the `grogu_servo_controller` repo for that side of the
+link.
+
+> **New here?** [`SETUP.md`](SETUP.md) has the board details, wiring, and a
+> quick-start. The three repos that make up the Grogu droid —
+> [Droid_Phone_Controller](https://github.com/andcoderes/Droid_Phone_Controller),
+> [grogu_mcu_receiver](https://github.com/andcoderes/grogu_mcu_receiver) (this repo),
+> and [grogu_servo_controller](https://github.com/andcoderes/grogu_servo_controller)
+> — are listed there.
 
 This project's structure (BLE peripheral, JSON command parsing, secrets
 generated from `.env`) was adapted from Chopper's `Droid-Receiver` firmware
@@ -18,9 +27,9 @@ evolve independently.
 
 ## Features
 
-- **BLE peripheral** — advertises as "Droid Grogu" (the app's pairing picker requires the `"Droid "` prefix), receives JSON commands from the DroidController app
+- **BLE peripheral** — advertises as "Droid Grogu" (the app's pairing picker requires the `"Droid "` prefix), receives JSON commands from the `Droid_Phone_Controller` app
 - **L298N differential drive** — movement commands (`s:1`) drive two DC motors via tank-steering mixing
-- **ESP-NOW trigger link** — audio-slot button presses (`s:3`) forward the id to `motor_controller` as an animation trigger, or as a stop (id `999`)
+- **ESP-NOW trigger link** — audio-slot button presses (`s:3`) forward the id to `grogu_servo_controller` as an animation trigger, or as a stop (id `999`)
 - **Dead-man's switch** — motors stop if no movement command arrives within `MOTOR_TIMEOUT_MS`, and on BLE disconnect
 
 ## Project Structure
@@ -31,9 +40,9 @@ src/
   config.h                        Pins, BLE device name, timing constants (UUIDs/keys come from secrets.h)
   communication/
     BleController.h/.cpp          BLE peripheral, JSON message buffering
-    CommandParser.h/.cpp          App JSON -> drive command / ping response / motor_controller trigger id
-    EspNowController.h/.cpp       ESP-NOW link to motor_controller — sends button triggers, tracks link-alive via heartbeats
-    MessageTypes.h                App status codes + ESP-NOW EventPacket format (shared with motor_controller)
+    CommandParser.h/.cpp          App JSON -> drive command / ping response / grogu_servo_controller trigger id
+    EspNowController.h/.cpp       ESP-NOW link to grogu_servo_controller — sends button triggers, tracks link-alive via heartbeats
+    MessageTypes.h                App status codes + ESP-NOW EventPacket format (shared with grogu_servo_controller)
   motor/
     MotorController.h/.cpp        L298N differential drive (IN1/IN2/EN per side)
 scripts/
@@ -85,12 +94,12 @@ before `setup()` runs, which the L298N can briefly read as a drive command.
    pio device monitor -b 115200
    ```
 
-6. In the DroidController app, add/select Grogu and connect — it should
-   drive from the movement stick immediately. Settings (`s:2`) and regular
-   buttons (`s:0`) are accepted but ignored. Audio-slot buttons (`s:3`)
-   forward to `motor_controller` over ESP-NOW — see
-   [`../motor_controller`](../motor_controller) to set that board up and
-   pair the two boards' MAC addresses.
+6. In the `Droid_Phone_Controller` app, add/select Grogu and connect — it
+   should drive from the movement stick immediately. Settings (`s:2`) and
+   regular buttons (`s:0`) are accepted but ignored. Audio-slot buttons
+   (`s:3`) forward to `grogu_servo_controller` over ESP-NOW — see the
+   [`grogu_servo_controller`](https://github.com/andcoderes/grogu_servo_controller)
+   repo to set that board up and pair the two boards' MAC addresses.
 
 ## Generating ESP-NOW keys + BLE UUIDs
 
@@ -101,17 +110,17 @@ cp .env.example .env
 ```
 
 **`PMK_KEY` / `LMK_KEY`** — two 16-byte (128-bit) keys for the ESP-NOW
-event link to `motor_controller`, each as 32 hex characters:
+event link to `grogu_servo_controller`, each as 32 hex characters:
 
 ```bash
 openssl rand -hex 16   # run twice — once for PMK_KEY, once for LMK_KEY
 ```
 
-These must end up byte-for-byte identical to `motor_controller/.env`'s
-copies.
+These must end up byte-for-byte identical to `grogu_servo_controller`'s
+`.env` copies.
 
-**`EVENT_BOARD_MAC`** — `motor_controller`'s WiFi MAC address. Leave as
-zeros until that board has been flashed and run — see its README for how
+**`EVENT_BOARD_MAC`** — `grogu_servo_controller`'s WiFi MAC address. Leave
+as zeros until that board has been flashed and run — see its README for how
 the two boards exchange MAC addresses.
 
 **`SERVICE_UUID` / `CHARACTERISTIC_UUID`** — `.env.example` pre-fills
@@ -125,8 +134,8 @@ registered in the app:
 python3 -c "import uuid; print(uuid.uuid4())"
 ```
 
-Both must match whatever the DroidController app has configured for Grogu's
-entry.
+Both must match whatever the `Droid_Phone_Controller` app has configured
+for Grogu's entry.
 
 `scripts/load_secrets.py` runs automatically before every build (see
 `platformio.ini`) and turns `.env` into `include/secrets.h`, which
