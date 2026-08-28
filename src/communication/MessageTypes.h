@@ -53,7 +53,7 @@ struct __attribute__((packed)) EventPacket {
 
 // Animation index key (see motor_controller's GeneratedCodeAnimations.cpp,
 // re-check after every Studio re-export): 0=idle annimation, 1=No, 2=yes,
-// 3=the force, 4=grab me, 5=New Animation.
+// 3=the force, 4=grab me, 5=eating, 6="6 7" (unnamed placeholder).
 
 // Reserved id for the app's STOP button (audio_grogu.json), matching the
 // ecosystem-wide "999 = Stop" convention (see rogerroger's macro json).
