@@ -83,8 +83,8 @@ Grogu is made of three separate repos that talk to each other:
   (or a stop, id `999`), since Grogu has no audio hardware. The `PMK_KEY`,
   `LMK_KEY`, and `ESPNOW_CHANNEL` must match on both sides, and each board
   needs the other's Wi-Fi MAC address.
-  > Referenced in older comments and `README.md` as `motor_controller` /
-  > `../motor_controller`.
+  > Called `motor_controller` / `../motor_controller` in older code
+  > comments (`src/communication/`).
 
 Command protocol and the ESP-NOW `EventPacket` format are defined in
 `src/communication/MessageTypes.h` and must stay in sync with the servo
