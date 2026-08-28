@@ -29,9 +29,13 @@ void MotorController::setMotor(uint8_t in1Pin, uint8_t in2Pin, uint8_t enPin, in
 }
 
 void MotorController::setDrive(int8_t lx, int8_t ly) {
-    // Differential drive mixing (tank steering from a single stick)
-    int left  = constrain((int)ly + (int)lx, -100, 100);
-    int right = constrain((int)ly - (int)lx, -100, 100);
+    // Differential drive mixing (tank steering from a single stick).
+    // The forward term is negated: pushing the stick forward (ly > 0) has to
+    // drive the motors in what setMotor() calls reverse, because the drive
+    // motors are mounted facing opposite ways. Steering (lx) is already
+    // correct, so it keeps its sign.
+    int left  = constrain(-(int)ly + (int)lx, -100, 100);
+    int right = constrain(-(int)ly - (int)lx, -100, 100);
 
     // STATUS_MOVEMENT always carries the left stick, so this runs every
     // ~100ms even during head-only (right-stick) control. Skip the redundant
