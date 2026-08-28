@@ -71,7 +71,7 @@ command.
 
 Grogu is made of three separate repos that talk to each other:
 
-- **[Droid_Phone_controller](https://github.com/andcoderes/Droid_Phone_controller)**
+- **[Droid_Phone_Controller](https://github.com/andcoderes/Droid_Phone_Controller)**
   — the phone app. Sends JSON commands to this board over BLE (movement
   stick, buttons, settings, ping). Shared across every droid; Grogu is just
   another entry in its pairing list.
